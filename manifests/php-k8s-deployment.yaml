@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  minReadySeconds: 5
+  replicas: 2
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 50%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - backend
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      containers:
+        - name: app
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          image: infra-task:latest
+          imagePullPolicy: Always
+          lifecycle:
+            postStart:
+              exec:
+                command: [ "/usr/local/bin/php", "artisan", "config:cache" ]
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              port: 8000
+              path: /
+            initialDelaySeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 1
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 200m
+              memory: 400M
+            requests:
+              cpu: 100m
+              memory: 200M

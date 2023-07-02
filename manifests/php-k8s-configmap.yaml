@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  APP_DEBUG: "false"
+  APP_ENV: production
+  APP_KEY: changeme # same as main project
+  LOG_LEVEL: debug
+  APP_NAME: "Infra-Task"
+  APP_URL: http://localhost
+  CACHE_DRIVER: redis
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_CACHE_DB: "1"
